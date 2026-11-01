@@ -1,0 +1,17 @@
+name: Item problem
+description: A request that sounds unnatural, or whose expected call is wrong
+labels: [data]
+body:
+  - type: input
+    id: item
+    attributes: {label: Item ID, description: "e.g. simple_send_upi_payment_3.te_latn"}
+    validations: {required: true}
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What's wrong
+      options: [Sounds unnatural, Wrong meaning / expected call is wrong, Ambiguous, Other]
+    validations: {required: true}
+  - type: textarea
+    id: fix
+    attributes: {label: How it should read, or what the correct call is}

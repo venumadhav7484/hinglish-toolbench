@@ -1,0 +1,11 @@
+name: Model request
+description: Ask for a model to be added to the leaderboard
+labels: [model]
+body:
+  - type: input
+    id: model
+    attributes: {label: Model, description: "provider and exact model ID"}
+    validations: {required: true}
+  - type: textarea
+    id: why
+    attributes: {label: Why it matters for Indian-language assistants}

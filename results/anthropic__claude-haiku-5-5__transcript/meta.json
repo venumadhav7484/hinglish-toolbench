@@ -1,0 +1,16 @@
+{
+ "run_id": "anthropic__claude-haiku-5-5__transcript",
+ "track": "full",
+ "split": "core",
+ "style": "transcript",
+ "items_path": null,
+ "categories": null,
+ "provider": "anthropic",
+ "model": "claude-haiku-5-5",
+ "effort": "low",
+ "dataset": "v1",
+ "dataset_sha": "ee0404d50f1e",
+ "harness": "1.0.0",
+ "started": "2026-11-01T15:37:39+00:00",
+ "items_planned": 1025
+}
