@@ -54,7 +54,8 @@ def test_prompted_parser():
     assert parse_prompted('{"calls": [{"name": "set_alarm", "arguments": {"time": "06:30"}}], "reply": "ok"}') == \
         [{"name": "set_alarm", "arguments": {"time": "06:30"}}]
     assert parse_prompted('<think>hmm {"calls": []}</think>Sure!\n```json\n{"calls": [], "reply": "Which?"}\n```') == []
-    assert parse_prompted("I will set the alarm.") is None
+    assert parse_prompted("I will set the alarm.") == []          # plain reply = no call
+    assert parse_prompted('{"calls": [{"name": ') is None          # broken JSON = no answer
 
 
 def test_end_to_end_with_fake_provider_and_verify():

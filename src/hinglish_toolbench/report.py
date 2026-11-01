@@ -64,8 +64,13 @@ def money(x: float | None, sign: str = "") -> str:
     return "–" if x is None else f"{sign}{x:.3f}" if x < 0.1 else f"{sign}{x:.2f}"
 
 
+LOCAL_NAMES = {"gemma-4-e4b-it-4bit": "Gemma 4 E4B · 4-bit local", "Qwen3.5-4B-MLX-4bit": "Qwen 3.5 4B · 4-bit local"}
+
+
 def pretty(model: str) -> str:
     m = model.split("/")[-1]
+    if m in LOCAL_NAMES:
+        return LOCAL_NAMES[m]
     if m.startswith("claude-"):
         parts = m[len("claude-"):].split("-")
         return "Claude " + parts[0].title() + " " + ".".join(parts[1:])

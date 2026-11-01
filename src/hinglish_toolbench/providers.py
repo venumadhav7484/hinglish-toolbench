@@ -71,8 +71,11 @@ def cost(model: str, usage: dict, prices: dict | None = None) -> float | None:
 
 
 def parse_prompted(text: str) -> list[dict] | None:
-    """Extract {"calls": [...]} from a model's text. None if no valid JSON object is found."""
+    """Extract {"calls": [...]} from a model's text. A reply with no JSON at all is a plain answer to the user, so
+    it makes no calls ([]); None only when JSON is attempted but unreadable."""
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)
+    if "{" not in text:
+        return []
     cands = re.findall(r"```(?:json)?\s*(\{.*?\})\s*```", text, flags=re.S) or [text]
     for c in cands:
         start = c.find("{")
