@@ -62,9 +62,17 @@ def money(x: float | None, sign: str = "") -> str:
     return "–" if x is None else f"{sign}{x:.3f}" if x < 0.1 else f"{sign}{x:.2f}"
 
 
+def pretty(model: str) -> str:
+    m = model.split("/")[-1]
+    if m.startswith("claude-"):
+        parts = m[len("claude-"):].split("-")
+        return "Claude " + parts[0].title() + " " + ".".join(parts[1:])
+    return m
+
+
 def label(s: dict) -> str:
     eff = s["settings"].get("effort") or s["settings"].get("reasoning_effort")
-    return s["model"] + (f" ({eff})" if eff and s["provider"] in ("anthropic", "openai") else "")
+    return pretty(s["model"]) + (f" · {eff}" if eff and s["provider"] in ("anthropic", "openai") else "")
 
 
 def summaries() -> list[dict]:
@@ -250,36 +258,21 @@ def findings(full: list[dict], manifest: dict) -> str:
         return ""
     short = {"hi_deva": "Hindi", "hi_latn": "Hinglish", "te_telu": "Telugu", "te_latn": "Telugu-English"}
     best = full[0]
-    out = [f"- **Best on the Indian-language versions: {label(best)}, {pct(best['indic_full_acc'])}** "
-           f"(English {pct(best['by_variant']['en']['full'])}), over {manifest['items']:,} items."]
+    out = [f"- **Top: {label(best)}, {pct(best['indic_full_acc'])}** on the Indian-language versions "
+           f"(English {pct(best['by_variant']['en']['full'])})."]
     sig = [(label(s), v, g) for s in full for v, g in s["gap_vs_en"].items() if g and g["ci95"][0] > 0]
     tot = sum(1 for s in full for g in s["gap_vs_en"].values() if g)
     if sig:
         worst = max(sig, key=lambda x: x[2]["gap"])
-        out.append(f"- **{len(sig)} of {tot} model × language pairs are worse than English beyond chance** (95% interval above 0). "
-                   f"Largest: {worst[0]} on {short[worst[1]]}, −{100 * worst[2]['gap']:.1f} points.")
+        out.append(f"- **{len(sig)} of {tot} model × language gaps are real** (95% interval clear of zero). "
+                   f"Biggest: {worst[0]} on {short[worst[1]]}, −{100 * worst[2]['gap']:.1f} points.")
     else:
         out.append(f"- **No model × language gap is clearly beyond chance** ({tot} pairs, 95% intervals all include 0).")
-    # what goes wrong only in the Indian-language versions
-    errs: dict[str, int] = {}
-    for s in full:
-        sc = {r["id"]: r for r in _scores(s["run_id"])}
-        for r in sc.values():
-            if r["variant"] != "en" and not r["full_ok"] and sc.get(f"{r['scenario']}.en", {}).get("full_ok"):
-                errs[r["error"]] = errs.get(r["error"], 0) + 1
-    if errs:
-        names = {"wrong_tool": "wrong or missing tool", "arg_mismatch": "a wrong argument", "false_call": "a call it shouldn't make",
-                 "missed_call": "no call at all", "schema_invalid": "an invalid call", "no_answer": "no answer"}
-        top = sorted(errs.items(), key=lambda kv: -kv[1])
-        out.append(f"- **Where English was right but another version wasn't** ({sum(errs.values())} cases across models): "
-                   + ", ".join(f"{names.get(k, k)} {n}" for k, n in top[:3]) + ".")
     priced = [s for s in full if s["cost_per_1k"]]
     if len(priced) > 1:
         cheap = min(priced, key=lambda s: s["cost_per_1k"])
-        out.append(f"- **Cost:** {label(cheap)} costs ${cheap['cost_per_1k']:.2f} per 1,000 requests at "
-                   f"{pct(cheap['indic_full_acc'])}, against ${best['cost_per_1k']:.2f} for {label(best)}.")
-    out.append(f"- Native-speaker reviewed items: **{manifest['human_reviewed_items']} of {manifest['items']:,}**. "
-               "Read the limits below before quoting a number.")
+        out.append(f"- **Cost:** {label(cheap)} is ${cheap['cost_per_1k']:.2f} per 1,000 requests "
+                   f"({pct(cheap['indic_full_acc'])}); {label(best)} is ${best['cost_per_1k']:.2f}.")
     return "\n".join(out)
 
 
@@ -311,6 +304,9 @@ def build() -> dict:
         figs["router.svg"] = fig_router(routers, full)
     for name, svg in figs.items():
         (IMG / name).write_text(svg)
+    if full:
+        from . import figures
+        figures.write_all(IMG)
     table = readme_table(full, routers, lite)
     readme = ROOT / "README.md"
     if readme.exists():

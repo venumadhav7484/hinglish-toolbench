@@ -26,7 +26,7 @@ def test_leaderboard_build_and_hf_export():
     assert any(r["partial"] for r in lb["lite"]) and len(lb["lite"]) == 3
     readme = (HOME / "README.md").read_text()
     assert "| 1 | oracle-a | **100.0%**" in readme and "old" not in readme and "lite split" in readme
-    for f in ("leaderboard.svg", "by_language.svg", "gap.svg"):
+    for f in ("leaderboard.svg", "by_language.svg", "gap.svg", "banner.svg", "five_ways.svg", "inside.svg", "judged.svg", "pipeline.svg", "slips.svg"):
         svg = (HOME / "docs" / "img" / f).read_text()
         assert svg.startswith("<svg") and "prefers-color-scheme: dark" in svg
     assert "Hinglish ToolBench" in (HOME / "docs" / "index.html").read_text()
