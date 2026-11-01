@@ -123,10 +123,10 @@ def main(argv: list[str] | None = None) -> None:
 
     g = sub.add_parser("gen", help="(maintainers) generate the dataset with Claude")
     g.add_argument("step", choices=["seeds", "variants", "checks", "repairs", "all"])
-    g.add_argument("--split", default="core", choices=["core", "hard"])
+    g.add_argument("--split", default="core", choices=["core", "hard", "safety"])
     g.set_defaults(f=_cmd_gen)
     asm = sub.add_parser("assemble", help="(maintainers) build data/v1 from the generation cache")
-    asm.add_argument("--split", default="core", choices=["core", "hard"])
+    asm.add_argument("--split", default="core", choices=["core", "hard", "safety"])
     asm.set_defaults(f=_cmd_assemble)
     sub.add_parser("manifest", help="rewrite data/v1/MANIFEST.json").set_defaults(f=_cmd_manifest)
     v = sub.add_parser("validate", help="check the dataset's structure")
@@ -146,7 +146,7 @@ def main(argv: list[str] | None = None) -> None:
     r.add_argument("--workers", type=int, default=8)
     r.add_argument("--limit", type=int, help="only this many scenarios (x5 language versions)")
     r.add_argument("--retry-errors", action="store_true")
-    r.add_argument("--split", default="core", choices=["core", "hard"], help="core (main board) or hard")
+    r.add_argument("--split", default="core", choices=["core", "hard", "safety"], help="core (main board), hard, or safety")
     r.add_argument("--style", default="typed", choices=["typed", "transcript"],
                    help="typed (as written) or transcript (lower-case, no punctuation, spoken fillers)")
     r.add_argument("--items", help="your own items .jsonl (same schema as data/v1/items.jsonl)")
